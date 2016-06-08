@@ -45,9 +45,10 @@ function setSession($Username,$Password){
         return 'there is a sesssion error';	
 	}
 }
-function getSesstion(){
+function getSession(){
 	//this function is to get the user info via GLOBAL var
-	if (session_status()==true) {
+	if (session_status()==2) {
+		session_start();
 		$GLOBALS['Password']=$_Session['Password'];
 		$GLOBALS['Username']=$_SESSION['Username'];
 		return true;
@@ -107,11 +108,20 @@ function signUp($Username,$Password,$ConfirmPassword){
 		return 'You can\'t force to sign up'.returnInputTable();
 	}
 }
+function logout(){
+	// this function is to logout the system
+	session_destroy();
+}
+
+
 function explainMessageCode($code){
 	//this function is to excute the explaintion of the login code and use show on the proper place
 }
 
-function encode($Password,$salt=bin2hex(openssl_random_pseudo_bytes(12))){
+function encode($Password,$salt=NULL){
+	if ($salt==null) {
+		$salt=bin2hex(openssl_random_pseudo_bytes(12));;
+	}
 	//this function is encode the password with salt
 	//$saltLength=12;
 	$Password=hash('sha256', $Password.$salt);
@@ -129,8 +139,9 @@ function decode($code,$password){
 	return false;
 }
 
-if (getSesstion()=false){
+if (getSession()==false){
 	//if the user haven't login do this steps
+	//the getSession will be false if the user haven't logged in
 	@$Password=$_POST['Password'];
 	@$Username=$_POST['Username'];
 	@$ConfirmPassword=$_POST['ConfirmPassword'];
