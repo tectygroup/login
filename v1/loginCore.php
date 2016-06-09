@@ -1,12 +1,14 @@
 <?php
 //this file contain the basic function which provide the feature of login
-
+session_start();
 
 //to set up the varibles for protal in the programme
 $Password='';
 $Username='';
 $ConfirmPassword='';
-session_start();
+//loginCode is to store the code can be explain in the function and show the correct data on the right place.
+$loginCode='';
+
 
 function connDB(){
 	if (empty($GLOBALS['GLOBALSmysql'])){
@@ -20,19 +22,32 @@ function loginCore($Username, $Password){
 	//this funciton is to give the authority to the sensitive aciton
 	$mysql=connDB();
 	//to serch the data if there hase a match
-	$result=$mysql->query('Select username from user where username="'.$Username.'" and password="'.encode($Password).'"');
+	$codePW=encode($Password);
+	$result=$mysql->query('Select username from user where username="'.$Username.'" and password="'.$codePW.'"');
+	echo $codePW;
 	if ($result->num_rows==1){
-		return TRUE;
+		//sent the login code
+		$GLOBALS['loginCode']=10;
+		return 1;
 	}
 	else{
-		$result=$mysql->query("select username from user where username='".$Username."'");
-		$result=$result->num_rows;
-		if ($result==1){
+		$result=$mysql->query("select password from user where username='".$Username."'");
+		
+		if ($result->num_rows==1){
+			if($result->fetch_object()==null){
+				//this is third party user
+				$GLOBALS['loginCode']=13;
+				return 3;
+			}
 			//password is incorrect
+			//return the login code
+			$GLOBALS['loginCode']=12;
 			return 2;
 		}
 		else{
-			return FALSE;
+			//user haven't found
+			$GLOBALS['loginCode']=11;
+			return 0;
 		}
 	}
 }
@@ -47,6 +62,7 @@ function loginStatus(){
 function getSession(){
 	//this function is to get the user info via GLOBAL var
 	if ($status=loginStatus()) {
+		echo 1;
 		$GLOBALS['Password']=$_SESSION['Password'];
 		$GLOBALS['Username']=$_SESSION['Username'];
 	}

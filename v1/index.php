@@ -36,15 +36,12 @@ function setSession($Username,$Password){
 		$_SESSION['Username']=$Username;
 		$_SESSION['Password']=$Password;
 	}
-	elseif (loginStatus()){
-        return 'there is a sesssion error';	
-	}
 }
 
 function login($Username,$Password){
 	$result=loginCore($Username, $Password);
 	//loginCore has 3 stage to use
-	if ($result==true) {
+	if ($result==1) {
 		echo setSession($Username, $Password);
 		return 'login successfully<br />
 				<a href="testLogin.php">you have the right to visit the sensitive part</a>';
@@ -63,20 +60,49 @@ function login($Username,$Password){
 }
 function signUp($Username,$Password,$ConfirmPassword){
 	//do the signup with the condition of both password is equal and there is not this user in the system
-	if (loginCore($Username, $Password)==false) {
+	if ($ConfirmPassword!=$Password) {
+		//the confirm password isn't correct
+		$GLOBALS['loginCode']=12;
+	}
+	elseif (loginCore($Username, $Password)==0) {
 		$mysql=connDB();
 		$mysql->query('insert into user (username, password) values ("'.$Username.'", "'.encode($Password).'")');
+		//login successfully
+		$GLOBALS['loginCode']=20;
 		return 'sign up successfully';
 	}
+	elseif ($GLOBALS['loginCode']==12){
+		//The username have been used
+		$GLOBALS['loginCode']=21;
+	}
 	else {
+		$GLOBALS['loginCode']=23;
 		return 'You can\'t force to sign up'.returnInputTable();
 	}
 }
 
 
 
-function explainMessageCode($code){
+function explainMessageCode(){
 	//this function is to excute the explaintion of the login code and use show on the proper place
+	if ($GLOBALS['loginCode']!=null) {
+		$code=$GLOBALS['loginCode'];
+		switch ($code) {
+			case 10:return 'Login Successfully';break;
+			case 11:return 'Please sign up.'; break;
+			case 12:return 'Password incorrect'; break;
+			case 13:return 'Unknown Error';break;
+			case 14:return 'Please filling the blank';break;
+			case 20:return 'Sign Up Successfully';break;
+			case 21:return 'Username have been used.';break;
+			case 22:return 'The two passwords doesn\'t same'; break;
+			case 23:return 'Unknown Error';break;
+			case 30:return 'Login Successfully';break;
+			default:
+				return 'Unkown Error';
+			break;
+		};
+	}
 }
 
 if (getSession()==false){
@@ -90,6 +116,7 @@ if (getSession()==false){
 if ($ConfirmPassword!=null) {
 	//try to sign up
 	if ($Password==null|$Username==null|$ConfirmPassword==null) {
+		$GLOBALS['loginCode']=13;
 		echo 'Please filling the blank<br />'.returnInputTable();
 	}
 	elseif($Password==$ConfirmPassword) {
@@ -106,9 +133,13 @@ else{
 		//echo the table to input the login info
 		echo returnInputTable() ;
 	}elseif($Password==null|$Username==null){
+		//the table haven't finish
+		$GLOBALS['loginCode']=14;
 		echo 'Plese filling the blank<br />'.returnInputTable();
 
 	}
 }
-
+echo '<br />Explain Message:'.explainMessageCode().'<br />';
+echo 'Explain Code:'.$GLOBALS['loginCode'].'<br />';
+echo '<a href="logout.php">logout</a>';
 ?>
