@@ -32,12 +32,11 @@ function returnInputTable(){
 
 function setSession($Username,$Password){
 	// this function is to input the userdata into session after they login
-	if (session_status()===PHP_SESSION_NONE){
-		session_start();
+	if (!loginStatus()){
 		$_SESSION['Username']=$Username;
 		$_SESSION['Password']=$Password;
 	}
-	elseif (session_status()===PHP_SESSION_ACTIVE){
+	elseif (loginStatus()){
         return 'there is a sesssion error';	
 	}
 }

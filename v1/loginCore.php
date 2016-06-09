@@ -6,6 +6,7 @@
 $Password='';
 $Username='';
 $ConfirmPassword='';
+session_start();
 
 function connDB(){
 	if (empty($GLOBALS['GLOBALSmysql'])){
@@ -38,7 +39,7 @@ function loginCore($Username, $Password){
 function loginStatus(){
 	//give the authority to unsensitive action
 	//like keep the login alive
-	if (session_status()==2){
+	if (isset($_SESSION['Password'])&isset($_SESSION['Username'])){
 		return true;
 	}
 	return false;
@@ -46,7 +47,7 @@ function loginStatus(){
 function getSession(){
 	//this function is to get the user info via GLOBAL var
 	if ($status=loginStatus()) {
-		$GLOBALS['Password']=$_Session['Password'];
+		$GLOBALS['Password']=$_SESSION['Password'];
 		$GLOBALS['Username']=$_SESSION['Username'];
 	}
 	return $status;

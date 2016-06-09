@@ -1,20 +1,9 @@
 <?php
 require_once 'loginCore.php';
 
-session_start();
-
-if(isset($_SESSION['views']))
-	$_SESSION['views']=$_SESSION['views']+1;
-
-	else
-		$_SESSION['views']=1;
-		echo "Views=". $_SESSION['views'];
-	
-
-echo 111;
 if (loginStatus()){
 	
-	echo 'you have logged in';
+	echo 'you have logged in<br />';
 }
 if (loginSecure()){
 	echo 'you can do some sensitive action';
