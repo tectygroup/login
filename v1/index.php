@@ -42,7 +42,7 @@ function login($Username,$Password){
 	$result=loginCore($Username, $Password);
 	//loginCore has 3 stage to use
 	if ($result==1) {
-		echo setSession($Username, $Password);
+		setSession($Username, $Password);
 		return 'login successfully<br />
 				<a href="testLogin.php">you have the right to visit the sensitive part</a>';
 		
@@ -65,8 +65,11 @@ function signUp($Username,$Password,$ConfirmPassword){
 		$GLOBALS['loginCode']=12;
 	}
 	elseif (loginCore($Username, $Password)==0) {
-		$mysql=connDB();
-		$mysql->query('insert into user (username, password) values ("'.$Username.'", "'.encode($Password).'")');
+// 		echo $encodePW=encode($Password);
+// 		echo ' <br />';
+		$sql='insert into user (username, password) values ("'.$Username.'", "'.$encodePW.'")';
+		
+		sqlQuery($sql);
 		//login successfully
 		$GLOBALS['loginCode']=20;
 		return 'sign up successfully';
@@ -139,7 +142,7 @@ else{
 
 	}
 }
-echo '<br />Explain Message:'.explainMessageCode().'<br />';
+echo 'Explain Message:'.explainMessageCode().'<br />';
 echo 'Explain Code:'.$GLOBALS['loginCode'].'<br />';
 echo '<a href="logout.php">logout</a>';
 ?>

@@ -9,6 +9,9 @@ $ConfirmPassword='';
 //loginCode is to store the code can be explain in the function and show the correct data on the right place.
 $loginCode='';
 
+//this is to set the test mode
+$testMode=false;
+
 
 function connDB(){
 	if (empty($GLOBALS['GLOBALSmysql'])){
@@ -17,34 +20,47 @@ function connDB(){
 	}
 	return $GLOBALS['GLOBALSmysql'];
 }
+function sqlQuery($sql){
+	//send the sql sentence as a function
+	if ($GLOBALS['testMode']==true){
+		echo $sql;
+	}
+	return connDB()->query($sql);
+}
+
 function loginCore($Username, $Password){
 	//loginCore has three different stage 0 is fail, 1 is successful, 2 is password incorrect
-	//this funciton is to give the authority to the sensitive aciton
-	$mysql=connDB();
-	//to serch the data if there hase a match
-	$codePW=encode($Password);
-	$result=$mysql->query('Select username from user where username="'.$Username.'" and password="'.$codePW.'"');
-	echo $codePW;
-	if ($result->num_rows==1){
+	//to serch the data if there has the user name and find the password
+	$sql='Select password from user where username="'.$Username.'"';
+	$result=sqlQuery($sql);
+	$codePW=$result->fetch_array();
+	if (empty($codePW)){
+		$codePW=$codePW[0]['password'];
+	}
+	
+	if (decode($codePW, $Password)){
+		//login successfully
 		//sent the login code
 		$GLOBALS['loginCode']=10;
 		return 1;
 	}
 	else{
-		$result=$mysql->query("select password from user where username='".$Username."'");
-		
+		//login fail
 		if ($result->num_rows==1){
-			if($result->fetch_object()==null){
+			if($codePW==null){
 				//this is third party user
 				$GLOBALS['loginCode']=13;
 				return 3;
 			}
 			//password is incorrect
+			//log out in case some specific situation.
+			logout();
+			
 			//return the login code
 			$GLOBALS['loginCode']=12;
 			return 2;
 		}
-		else{
+		elseif($result->num_rows==0){
 			//user haven't found
 			$GLOBALS['loginCode']=11;
 			return 0;
@@ -86,13 +102,16 @@ function encode($Password,$salt=NULL){
 	$Password=hash('sha256', $Password.$salt);
 	$Password1=substr($Password, 0,21);
 	$Password2=substr($Password, 21);
-	return $Password1.$salt.$Password2;
+	$Password=$Password1.$salt.$Password2;
+	echo $Password;
+	return $Password;
+	
 }
-function decode($code,$password){
+function decode($code,$Password){
 	//this function will return if the password is correct
 	$salt=substr($Password, 21,24);
-	encode($password,$salt);
-	if (encode($password,$salt)==$code){
+	encode($Password,$salt);
+	if (encode($Password,$salt)==$code){
 		return true;
 	}
 	return false;
