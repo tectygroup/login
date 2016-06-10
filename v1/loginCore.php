@@ -14,18 +14,25 @@ $testMode=false;
 
 
 function connDB(){
+	//always connect the Database with one link
 	if (empty($GLOBALS['GLOBALSmysql'])){
-		$GLOBALS['mysql']=new mysqli('localhost','root','','test');
-		return $GLOBALS['mysql'];
+		$GLOBALS['GLOBALSmysql']=new mysqli('localhost','root','','test');
+		return $GLOBALS['GLOBALSmysql'];
 	}
 	return $GLOBALS['GLOBALSmysql'];
 }
 function sqlQuery($sql){
 	//send the sql sentence as a function
-	if ($GLOBALS['testMode']==true){
-		echo $sql;
-	}
+	testmodeEcho($sql, 'SqlSentence');
 	return connDB()->query($sql);
+}
+
+function testmodeEcho($string,$valueName){
+	//if the site enter the test mode echo the given string
+	if ($GLOBALS['testMode']==true){
+		echo $valueName.':'.$string.'<br />';
+		
+	}
 }
 
 function loginCore($Username, $Password){
@@ -34,8 +41,8 @@ function loginCore($Username, $Password){
 	$sql='Select password from user where username="'.$Username.'"';
 	$result=sqlQuery($sql);
 	$codePW=$result->fetch_array();
-	if (empty($codePW)){
-		$codePW=$codePW[0]['password'];
+	if (!empty($codePW)){
+		$codePW=$codePW['password'];
 	}
 	
 	if (decode($codePW, $Password)){
@@ -78,7 +85,6 @@ function loginStatus(){
 function getSession(){
 	//this function is to get the user info via GLOBAL var
 	if ($status=loginStatus()) {
-		echo 1;
 		$GLOBALS['Password']=$_SESSION['Password'];
 		$GLOBALS['Username']=$_SESSION['Username'];
 	}
@@ -103,13 +109,12 @@ function encode($Password,$salt=NULL){
 	$Password1=substr($Password, 0,21);
 	$Password2=substr($Password, 21);
 	$Password=$Password1.$salt.$Password2;
-	echo $Password;
 	return $Password;
 	
 }
 function decode($code,$Password){
 	//this function will return if the password is correct
-	$salt=substr($Password, 21,24);
+	$salt=substr($code, 21,24);
 	encode($Password,$salt);
 	if (encode($Password,$salt)==$code){
 		return true;

@@ -26,7 +26,7 @@ function returnInputTable(){
 		$inputTable=$inputTable.'Confirm password:'.'<input name="ConfirmPassword" type="password" /><br />';
 	}
 	//finish the input blank
-	$inputTable=$inputTable.'<input type="submit" name="submit"/></form>';
+	$inputTable=$inputTable.'<input type="submit" value="submit"/></form>';
 	return $inputTable;
 }
 
@@ -43,18 +43,14 @@ function login($Username,$Password){
 	//loginCore has 3 stage to use
 	if ($result==1) {
 		setSession($Username, $Password);
-		return 'login successfully<br />
-				<a href="testLogin.php">you have the right to visit the sensitive part</a>';
-		
 	}
 	else {
 		if ($result==2) {
 			//because we use the GOLBAL as a portal, so we should clear to have our appearance.
 			$GLOBALS['Password']='';
-			return 'uncorrect password'.returnInputTable();
 		}
 		else {
-			return 'you dont have an account, plesae create one<br />'.returnInputTable();
+			$GLOBALS['loginCode']=15;
 		}
 	}
 }
@@ -65,14 +61,12 @@ function signUp($Username,$Password,$ConfirmPassword){
 		$GLOBALS['loginCode']=12;
 	}
 	elseif (loginCore($Username, $Password)==0) {
-// 		echo $encodePW=encode($Password);
+		$encodePW=encode($Password);
 // 		echo ' <br />';
 		$sql='insert into user (username, password) values ("'.$Username.'", "'.$encodePW.'")';
-		
 		sqlQuery($sql);
 		//login successfully
 		$GLOBALS['loginCode']=20;
-		return 'sign up successfully';
 	}
 	elseif ($GLOBALS['loginCode']==12){
 		//The username have been used
@@ -80,7 +74,6 @@ function signUp($Username,$Password,$ConfirmPassword){
 	}
 	else {
 		$GLOBALS['loginCode']=23;
-		return 'You can\'t force to sign up'.returnInputTable();
 	}
 }
 
@@ -91,20 +84,22 @@ function explainMessageCode(){
 	if ($GLOBALS['loginCode']!=null) {
 		$code=$GLOBALS['loginCode'];
 		switch ($code) {
-			case 10:return 'Login Successfully';break;
-			case 11:return 'Please sign up.'; break;
-			case 12:return 'Password incorrect'; break;
-			case 13:return 'Unknown Error';break;
-			case 14:return 'Please filling the blank';break;
-			case 20:return 'Sign Up Successfully';break;
-			case 21:return 'Username have been used.';break;
-			case 22:return 'The two passwords doesn\'t same'; break;
-			case 23:return 'Unknown Error';break;
-			case 30:return 'Login Successfully';break;
+			case 10:$return='Login Successfully';break;
+			case 11:$return='Please sign up.'; break;
+			case 12:$return='Password incorrect'; break;
+			case 13:$return='Unknown Error';break;
+			case 14:$return='Please filling the blank';break;
+			case 15:$return='Please Sign Up';break;
+			case 20:$return='Sign Up Successfully';break;
+			case 21:$return='Username have been used.';break;
+			case 22:$return='The two passwords doesn\'t same'; break;
+			case 23:$return='Unknown Error';break;
+			case 30:$return='Login Successfully';break;
 			default:
-				return 'Unkown Error';
+				$return='Unkown Error';
 			break;
 		};
+		echo $return.'<br />';
 	}
 }
 
@@ -120,29 +115,36 @@ if ($ConfirmPassword!=null) {
 	//try to sign up
 	if ($Password==null|$Username==null|$ConfirmPassword==null) {
 		$GLOBALS['loginCode']=13;
-		echo 'Please filling the blank<br />'.returnInputTable();
 	}
 	elseif($Password==$ConfirmPassword) {
-		echo signUp($Username, $Password, $ConfirmPassword);
+		signUp($Username, $Password, $ConfirmPassword);
 	}
 }
 else{
 	//try to login
 	if ($Password!=null&$Username!=null){
-		echo login($Username, $Password);
+		login($Username, $Password);
 	}
 	elseif($Password==null&$Username==null)
 	{
 		//echo the table to input the login info
-		echo returnInputTable() ;
+		$GLOBALS['loginCode']=14;
 	}elseif($Password==null|$Username==null){
 		//the table haven't finish
 		$GLOBALS['loginCode']=14;
-		echo 'Plese filling the blank<br />'.returnInputTable();
-
 	}
 }
-echo 'Explain Message:'.explainMessageCode().'<br />';
-echo 'Explain Code:'.$GLOBALS['loginCode'].'<br />';
+
+if (($loginCode==10or $loginCode==20)or $loginCode==30){
+// 	echo explainMessageCode();
+	echo '<a href="testLogin.php">you have the right to visit the sensitive part</a><br />';
+}
+else {
+	echo returnInputTable();
+}
+
+
+testmodeEcho(explainMessageCode(), 'Explain Message');
+testmodeEcho($GLOBALS['loginCode'], 'Explain Code');
 echo '<a href="logout.php">logout</a>';
 ?>
