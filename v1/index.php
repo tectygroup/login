@@ -62,7 +62,6 @@ function signUp($Username,$Password,$ConfirmPassword){
 	}
 	elseif (loginCore($Username, $Password)==0) {
 		$encodePW=encode($Password);
-// 		echo ' <br />';
 		$sql='insert into user (username, password) values ("'.$Username.'", "'.$encodePW.'")';
 		sqlQuery($sql);
 		//login successfully
@@ -99,7 +98,7 @@ function explainMessageCode(){
 				$return='Unkown Error';
 			break;
 		};
-		echo $return.'<br />';
+		return 	 $return.'<br />';
 	}
 }
 
@@ -136,7 +135,7 @@ else{
 }
 
 if (($loginCode==10or $loginCode==20)or $loginCode==30){
-// 	echo explainMessageCode();
+	echo explainMessageCode();
 	echo '<a href="testLogin.php">you have the right to visit the sensitive part</a><br />';
 }
 else {
